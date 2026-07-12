@@ -1,0 +1,9 @@
+Ticker,Asset Class,Market Value,Sector,Expense Ratio
+VOO,Equity,100000,Large Cap Blend,0.03%
+VXUS,Equity,100000,International,0.07%
+VTI,Equity,100000,US Total Market,0.03%
+BND,Fixed Income,100000,Bonds,0.04%
+VNQ,Real Estate,100000,Real Estate,0.12%
+XLV,Equity,100000,Healthcare,0.09%
+XLP,Equity,100000,Consumer Staples,0.09%
+Cash,Cash,100000,Cash,0.00%

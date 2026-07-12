@@ -1,0 +1,9 @@
+{
+  "risk_tolerance": "Moderate",
+  "goal": "Retirement",
+  "investment_horizon": "10+ years",
+  "age": 45,
+  "liquidity_needs": "Low",
+  "dependents": 2,
+  "restrictions": ["No tobacco stocks", "Prefer low-cost funds"]
+}

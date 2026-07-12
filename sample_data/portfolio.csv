@@ -1,0 +1,5 @@
+Ticker,Asset Class,Market Value,Sector,Expense Ratio
+AAPL,Equity,1000000,Technology,0.10%
+MSFT,Equity,750000,Technology,0.08%
+NIFTYBEES,ETF,500000,Index,0.05%
+HDFCBOND,Bond,300000,Fixed Income,0.40%

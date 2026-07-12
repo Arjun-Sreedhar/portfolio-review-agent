@@ -1,0 +1,4 @@
+Ticker,Asset Class,Market Value,Sector,Expense Ratio
+AAPL,Equity,900000,Technology,0.1%
+MSFT,Equity,50000,Technology,0.1%
+CASH,Cash,50000,Cash,0%

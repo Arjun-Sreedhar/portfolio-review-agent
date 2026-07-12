@@ -1,0 +1,4 @@
+Ticker,Asset Class,Market Value,Sector,Expense Ratio
+AAPL,Equity,500000,Technology,0.1%
+MSFT,Equity,INVALID,Technology,0.1%
+GOOG,Equity,400000,Technology,0.1%
