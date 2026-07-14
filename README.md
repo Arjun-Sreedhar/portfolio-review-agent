@@ -8,7 +8,7 @@ The application helps advisors prepare for client review meetings by combining d
 
 ## Features
 
-- Upload or paste a portfolio (CSV or supported brokerage statement)
+- Upload or paste a portfolio (CSV or PDF)
 - Upload or paste a client profile (JSON)
 - Deterministic portfolio analysis:
   - Asset allocation
@@ -25,32 +25,30 @@ The application helps advisors prepare for client review meetings by combining d
 
 ## Architecture
 
-The application follows an agentic workflow where the OpenAI Agent coordinates specialized tools instead of relying on a single LLM prompt.
+The application follows an agentic workflow where an OpenAI Agent orchestrates specialized tools instead of relying on a single LLM prompt.
 
 ```text
-Advisor
-   │
-   ▼
-Upload Portfolio + Client Profile
-   │
-   ▼
-OpenAI Agent (Coordinator)
-   │
-   ▼
-Portfolio Parser Tool
-   │
-   ▼
-Portfolio Analysis Tool
-   │
-   ▼
-Portfolio Review Generator
-   │
-   ├────────► Advisor Summary
-   │
-   └────────► Structured JSON
+                 Advisor
+                    │
+                    ▼
+      Portfolio        Client Profile
+           │                 │
+           ▼                 ▼
+ Portfolio Parser     Client Profile Parser
+           │                 │
+           └────────┬────────┘
+                    ▼
+         Portfolio Analysis Tool
+                    │
+                    ▼
+      Portfolio Review Generator
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+  Advisor Review      Structured JSON
 ```
 
-The OpenAI Agent orchestrates the workflow by invoking specialized tools, interpreting their outputs, and deciding whether to continue, stop, or surface warnings before generating the final advisor review.
+The OpenAI Agent coordinates the workflow by invoking specialized tools, interpreting their outputs, and deciding whether to continue, surface warnings, or stop before generating the final advisor review.
 
 ---
 
@@ -58,14 +56,29 @@ The OpenAI Agent orchestrates the workflow by invoking specialized tools, interp
 
 ### Portfolio Parser
 
-- Parses portfolio CSV/PDF
+- Parses portfolio CSV or PDF
 - Normalizes portfolio data
 - Extracts structured holdings
 - Reports parsing warnings and failures
 
+---
+
+### Client Profile Parser
+
+- Parses the uploaded client profile (JSON)
+- Validates required fields such as:
+  - Risk tolerance
+  - Investment goal
+  - Investment horizon
+  - Age
+- Reports missing or incomplete client information
+- Returns a normalized client profile for downstream analysis
+
+---
+
 ### Portfolio Analysis
 
-Performs deterministic financial calculations:
+Performs deterministic financial calculations including:
 
 - Asset allocation
 - Sector exposure
@@ -73,6 +86,8 @@ Performs deterministic financial calculations:
 - Weighted expense ratio
 
 No LLM is used for financial calculations.
+
+---
 
 ### Portfolio Review Generator
 
@@ -82,6 +97,8 @@ Combines the structured portfolio analysis with the client profile to generate:
 - Risk explanations
 - Advisor-reviewable recommendations
 - Meeting talking points
+
+The LLM is used only for reasoning over structured analysis and generating advisor-facing narratives.
 
 ---
 
@@ -111,7 +128,7 @@ portfolio-review-agent/
 Clone the repository:
 
 ```bash
-git clone <https://github.com/Arjun-Sreedhar/portfolio-review-agent>
+git clone https://github.com/Arjun-Sreedhar/portfolio-review-agent.git
 cd portfolio-review-agent
 ```
 
@@ -138,6 +155,24 @@ Run the application:
 ```bash
 streamlit run app.py
 ```
+
+---
+
+## Runtime Behavior
+
+The application supports two execution modes.
+
+### OpenAI Agents SDK (Recommended)
+
+If an `OPENAI_API_KEY` is configured, the application runs using the OpenAI Agents SDK. The agent orchestrates the workflow by invoking specialized tools, interpreting their outputs, and deciding whether to continue, surface warnings, or stop before generating the final advisor review.
+
+This is the runtime demonstrated in the accompanying Loom video.
+
+### Deterministic Fallback
+
+If no `OPENAI_API_KEY` is available, the application automatically falls back to a deterministic local implementation.
+
+The fallback preserves the same workflow and decision policy, allowing the application to run end-to-end without external API calls. It is intended for local development and testing when an API key is unavailable.
 
 ---
 
@@ -177,7 +212,7 @@ The application was tested across multiple synthetic scenarios:
 
 The OpenAI Agent follows a structured workflow rather than making unrestricted tool calls.
 
-- Parse the portfolio before performing analysis.
+- Parse the portfolio and client profile before analysis.
 - Stop the workflow if portfolio parsing fails.
 - Continue with warnings when partial parsing is acceptable.
 - Never assume missing client information.
@@ -197,7 +232,7 @@ Examples include:
 - Missing client profile fields
 - Missing OpenAI API key (falls back to deterministic review generation)
 
-Instead of silently producing incomplete results, the agent surfaces warnings or stops the workflow with a clear explanation when appropriate.
+Instead of silently producing incomplete results, the agent surfaces warnings or stops the workflow with a clear explanation whenever appropriate.
 
 ---
 
@@ -216,9 +251,9 @@ To keep the project focused on the agent workflow, the following integrations ar
 
 - Python
 - Streamlit
-- OpenAI Agents SDK
-- OpenAI Python SDK
-- Pandas
+- OpenAI Agents SDK (workflow orchestration)
+- OpenAI Python SDK (LLM integration)
+- pypdf
 - python-dotenv
 
 ---
@@ -228,8 +263,8 @@ To keep the project focused on the agent workflow, the following integrations ar
 This project intentionally separates deterministic computation from AI reasoning.
 
 - Portfolio calculations are performed using deterministic Python code.
-- The OpenAI Agent orchestrates the workflow and interprets tool outputs.
-- The LLM is responsible for contextual reasoning and advisor-facing narrative—not numerical calculations.
+- The OpenAI Agent orchestrates the workflow by invoking specialized tools and interpreting their outputs.
+- The LLM is responsible only for contextual reasoning and advisor-facing narrative generation—not numerical calculations.
 - The advisor remains responsible for all investment decisions.
 
 ---
