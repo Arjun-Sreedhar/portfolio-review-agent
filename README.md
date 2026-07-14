@@ -166,7 +166,6 @@ The application supports two execution modes.
 
 If an `OPENAI_API_KEY` is configured, the application runs using the OpenAI Agents SDK. The agent orchestrates the workflow by invoking specialized tools, interpreting their outputs, and deciding whether to continue, surface warnings, or stop before generating the final advisor review.
 
-This is the runtime demonstrated in the accompanying Loom video.
 
 ### Deterministic Fallback
 
