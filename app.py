@@ -261,10 +261,24 @@ if run_clicked:
 
         st.stop()
 
-    report = result["report"]
-    parser_result = result["parser_result"]
-    profile_result = result["profile_result"]
-    analysis = result["analysis"]
+    report = result.get("report", {})
+    if isinstance(report, str):
+        # The SDK has no enforced output schema, so on some runs it may return
+        # a single narrative string instead of the expected structured report.
+        # Treat it as a valid summary rather than an error, since status is "success".
+        report = {
+            "title": "Portfolio Review",
+            "summary": report,
+            "risks": [],
+            "recommendations": [],
+            "talking_points": [],
+        }
+    elif not isinstance(report, dict):
+        report = {}
+
+    parser_result = result.get("parser_result") or {}
+    profile_result = result.get("profile_result") or {}
+    analysis = result.get("analysis") or {}
     runtime = result.get("runtime", "unknown")
     workflow_note = result.get("workflow_note", "")
 
@@ -274,8 +288,8 @@ if run_clicked:
         st.caption(f"Runtime: {'OpenAI Agents SDK' if runtime == 'openai_agents_sdk' else 'Fallback'}")
         if workflow_note:
             st.caption(workflow_note)
-        st.subheader(report["title"])
-        st.write(report["summary"])
+        st.subheader(report.get("title", "Portfolio Review"))
+        st.write(report.get("summary", ""))
 
     metrics_left, metrics_right = st.columns(2, gap="large")
     with metrics_left:
@@ -316,15 +330,17 @@ if run_clicked:
             st.metric("HHI", f"{analysis.get('hhi', 0.0):.4f}")
             st.metric("Expense Ratio", f"{analysis.get('expense_ratio', 0.0):.2f}%")
 
+    structured_json = result.get("structured_json") or {}
+
     with st.expander("Structured JSON", expanded=False):
-        st.json(result["structured_json"])
+        st.json(structured_json)
 
     with st.expander("Agent Decision Log", expanded=False):
         render_list_or_text(result.get("decision_log"), "No decision log recorded.")
 
     st.download_button(
         "Download structured report",
-        data=json.dumps(result["structured_json"], indent=2),
+        data=json.dumps(structured_json, indent=2),
         file_name="portfolio_review.json",
         mime="application/json",
         use_container_width=True,
